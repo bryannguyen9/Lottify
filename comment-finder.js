@@ -14,26 +14,26 @@ const rl = readline.createInterface({
     await page.goto(postURL);
 
     rl.question('Enter the keyword you want to search for in comments: ', async (keyword) => {
-      await page.waitForSelector('.comment-element-selector', { timeout: 10000 });
+      // Scroll through the comment section to load comments (if necessary).
+      // You can use the scrolling code mentioned earlier.
 
-      const comments = await page.evaluate((keyword) => {
-        const commentElements = document.querySelectorAll('.comment-element-selector');
-        const filteredComments = Array.from(commentElements).filter(comment => comment.textContent.includes(keyword));
-        
-        return filteredComments.map(comment => {
-          const commenter = comment.closest('.commenter-selector').querySelector('.commenter-name-selector').textContent;
-          return {
-            commenter,
-            commentText: comment.textContent
-          };
-        });
-      }, keyword);
+      // Wait for the main container with class "_ae65" to appear.
+      await page.waitForSelector('._ae65'); // Make sure this selector is correct.
 
-      if (comments.length === 0) {
-        console.log('No comments containing the specified keyword found.');
+      // Traverse the DOM to reach the h1 element with class "_aac1" containing the text.
+      const commentText = await page.evaluate(() => {
+        const commentContainer = document.querySelector('._ae65 .x9f619 ._ae1k ._ae2s div:nth-child(3) ._ae5q ul ._a9z6 .x1qjc9v5 ._a9zj ._a9zm ._a9zn ._a9zr ._a9zc ._a9zs ._aac1');
+        return commentContainer ? commentContainer.textContent : null;
+      });
+
+      if (commentText) {
+        if (commentText.includes(keyword)) {
+          console.log(`Comment text: ${commentText}`);
+        } else {
+          console.log(`The comment text does not contain the keyword: ${keyword}`);
+        }
       } else {
-        console.log('Comments containing the specified keyword:');
-        console.log(comments);
+        console.log('Comment section or the target element not found on the page.');
       }
 
       await browser.close();
